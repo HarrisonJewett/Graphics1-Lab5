@@ -314,3 +314,49 @@ float bcZ(float f1, float f2, float f3, float r1, float r2, float r3)
 {
 	return ((f1 * r1) + (f2 * r2) + (f3 * r3));
 }
+
+float baryU(vertex vert1, vertex vert2, vertex vert3, float cX, float cY)
+{
+	int u1 = convertNDCX(vert1.U, TreeOfLife_width);
+	int u2 = convertNDCX(vert2.U, TreeOfLife_width);
+	int u3 = convertNDCX(vert3.U, TreeOfLife_width);
+	int v1 = convertNDCY(vert1.V, TreeOfLife_width);
+	int v2 = convertNDCY(vert2.V, TreeOfLife_width);
+	int v3 = convertNDCY(vert3.V, TreeOfLife_width);
+
+	int gamma = implicitLineEquation(u1, u2, v1, v2, u3, v3);
+	int alpha = implicitLineEquation(u2, u3, v2, v3, u1, v1);
+	int beta = implicitLineEquation(u3, u1, v3, v1, u2, v2);
+	int t1 = implicitLineEquation(u1, u2, v1, v2, cX, cY);
+	int t2 = implicitLineEquation(u2, u3, v2, v3, cX, cY);
+	int t3 = implicitLineEquation(u3, u1, v3, v1, cX, cY);
+
+	float r1 = (float)t1 / gamma;
+	float r2 = (float)t2 / alpha;
+	float r3 = (float)t3 / beta;
+	
+	return bcZ(vert3.U, vert1.U, vert2.U, r1, r2, r3);
+}
+
+float baryV(vertex vert1, vertex vert2, vertex vert3, float cX, float cY)
+{
+	int u1 = convertNDCX(vert1.U, TreeOfLife_width);
+	int u2 = convertNDCX(vert2.U, TreeOfLife_width);
+	int u3 = convertNDCX(vert3.U, TreeOfLife_width);
+	int v1 = convertNDCY(vert1.V, TreeOfLife_width);
+	int v2 = convertNDCY(vert2.V, TreeOfLife_width);
+	int v3 = convertNDCY(vert3.V, TreeOfLife_width);
+
+	int gamma = implicitLineEquation(u1, u2, v1, v2, u3, v3);
+	int alpha = implicitLineEquation(u2, u3, v2, v3, u1, v1);
+	int beta = implicitLineEquation(u3, u1, v3, v1, u2, v2);
+	int t1 = implicitLineEquation(u1, u2, v1, v2, cX, cY);
+	int t2 = implicitLineEquation(u2, u3, v2, v3, cX, cY);
+	int t3 = implicitLineEquation(u3, u1, v3, v1, cX, cY);
+
+	float r1 = (float)t1 / gamma;
+	float r2 = (float)t2 / alpha;
+	float r3 = (float)t3 / beta;
+
+	return bcZ(vert3.V, vert1.V, vert2.V, r1, r2, r3);
+}

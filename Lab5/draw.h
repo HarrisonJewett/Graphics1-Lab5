@@ -11,7 +11,8 @@ unsigned int interpColors(unsigned int sourceColor, unsigned int desColor, float
 void drawToRaster(int x, int y, float z, unsigned int color);
 void clearBuffer(unsigned int color);
 void drawLine(const vertex& v1, const vertex& v2);
-void colorTriangle(vec4f v1, vec4f v2, vec4f v3, unsigned int color);
+void colorTriangle(vertex v1, vertex v2, vertex v3);
+unsigned int colorSwap(unsigned int color);
 
 
 void parametricAlgorithm(vertex v1, vertex v2)
@@ -40,10 +41,6 @@ void parametricAlgorithm(vertex v1, vertex v2)
 
 unsigned int interpColors(unsigned int sourceColor, unsigned int desColor, float ratio)
 {
-	//(b - a)*r + a
-	//Might need to add A to this
-
-
 	//ARGB
 	int r = (sourceColor & 0x00FF0000) >> 16;
 	int g = (sourceColor & 0x0000FF00) >> 8;
@@ -96,32 +93,30 @@ void drawLine(const vertex& v1, const vertex& v2)
 	parametricAlgorithm(temp1, temp2);
 }
 
-void colorTriangle(vec4f v1, vec4f v2, vec4f v3, unsigned int color)
+void colorTriangle(vertex v1, vertex v2, vertex v3)
 {
-	vec4f temp1 = v1;
-	vec4f temp2 = v2;
-	vec4f temp3 = v3;
+	vertex temp1 = v1;
+	vertex temp2 = v2;
+	vertex temp3 = v3;
 
 	if (VertexShader)
 	{
-		VertexShader(temp1);
-		VertexShader(temp2);
-		VertexShader(temp3);
+		VertexShader(temp1.point);
+		VertexShader(temp2.point);
+		VertexShader(temp3.point);
 	}
 
-	unsigned int x1 = convertNDCX(temp1.x);
-	unsigned int x2 = convertNDCX(temp2.x);
-	unsigned int x3 = convertNDCX(temp3.x); 
-	unsigned int y1 = convertNDCY(temp1.y);
-	unsigned int y2 = convertNDCY(temp2.y);
-	unsigned int y3 = convertNDCY(temp3.y);
+	unsigned int x1 = convertNDCX(temp1.point.x);
+	unsigned int x2 = convertNDCX(temp2.point.x);
+	unsigned int x3 = convertNDCX(temp3.point.x); 
+	unsigned int y1 = convertNDCY(temp1.point.y);
+	unsigned int y2 = convertNDCY(temp2.point.y);
+	unsigned int y3 = convertNDCY(temp3.point.y);
 
 	int startX = std::min(std::min(x1, x2), x3);
 	int endX = std::max(std::max(x1, x2), x3);
 	int startY = std::min(std::min(y1, y2), y3);
-	int endY = std::max(std::max(y1, y2), y3);
-	
-	
+	int endY = std::max(std::max(y1, y2), y3);	
 
 	for (int i = startY; i < endY; ++i)
 	{
@@ -129,8 +124,20 @@ void colorTriangle(vec4f v1, vec4f v2, vec4f v3, unsigned int color)
 		{
 			if (barycentricCheck(x1, y1, x2, y2, x3, y3, j, i))
 			{
-				drawToRaster(j, i, barycentric(temp1, temp2, temp3, j, i), color);
+				unsigned int color = colorSwap(tree_pixels[convertCoor(convertNDCX(baryU(temp1, temp2, temp3, j, i),511), convertNDCY(baryV(temp1, temp2, temp3, j, i),511), TreeOfLife_width)]);
+
+				drawToRaster(j, i, barycentric(temp1.point, temp2.point, temp3.point, j, i), color);
 			}
 		}
 	}
+}
+
+unsigned int colorSwap(unsigned int color)
+{
+	unsigned int temp1 = (color & 0xFF000000) >> 24;
+	unsigned int temp2 = (color & 0x00FF0000) >> 8;
+	unsigned int temp3 = (color & 0x0000FF00) << 8;
+	unsigned int temp4 = (color & 0x000000FF) << 24;
+
+	return (temp1 | temp2 | temp3 | temp4);
 }

@@ -1,5 +1,7 @@
 #pragma once
+#include "TreeOfLife.h"
 
+#define tree_pixels TreeOfLife_pixels
 
 struct vec3f
 {
@@ -29,6 +31,8 @@ struct vec4f
 struct vertex
 {
 	vec4f point;
+	float U;
+	float V;
 	unsigned int color;
 };
 

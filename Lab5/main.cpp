@@ -9,17 +9,26 @@ int main()
 
 	timer.Restart();
 
+	//Face 1
 	original.v1.point = { -0.25,  0.5, -0.25, 1.0f};
 	original.v1.color = 0xFF00FF00;
+	original.v1.U = 0.0;
+	original.v1.V = 0.0;
 
 	original.v2.point = { 0.25,  0.5, -0.25, 1.0f};
 	original.v2.color = 0xFF00FF00;
+	original.v2.U = 1.0;
+	original.v2.V = 0.0;
 
 	original.v3.point = { -0.25,  0  , -0.25, 1.0f};
 	original.v3.color = 0xFF00FF00;
+	original.v3.U = 1.0;
+	original.v3.V = 1.0;
 
 	original.v4.point = { 0.25,  0  , -0.25, 1.0f };
 	original.v4.color = 0xFF00FF00;
+	original.v4.U = 0.0;
+	original.v4.V = 1.0;
 
 	original.v5.point = { -0.25,  0.5,  0.25, 1.0f};
 	original.v5.color = 0xFF00FF00;
@@ -109,17 +118,19 @@ int main()
 		drawLine(original.v3, original.v7);
 
 		//filling triangles
-		colorTriangle(original.v1.point, original.v2.point, original.v3.point, 0xFF00FF00);
-		colorTriangle(original.v4.point, original.v3.point, original.v2.point, 0xFF641E16);
-
-		colorTriangle(original.v2.point, original.v6.point, original.v4.point, 0xFF512E5F);
-		colorTriangle(original.v8.point, original.v4.point, original.v6.point, 0xFF154360);
-
-		colorTriangle(original.v6.point, original.v5.point, original.v8.point, 0xFF0B5345);
-		colorTriangle(original.v7.point, original.v8.point, original.v5.point, 0xFF7D6608);
-
-		colorTriangle(original.v5.point, original.v1.point, original.v7.point, 0xFF6E2C00);
-		colorTriangle(original.v3.point, original.v7.point, original.v1.point, 0xFF7B7D7D);
+		colorTriangle(original.v1, original.v2, original.v3);      //0xFF00FF00);
+		colorTriangle(original.v4, original.v3, original.v2);      //0xFF641E16);
+															       
+		//tree of life 511/511								       
+															       
+		colorTriangle(original.v2, original.v6, original.v4);      //0xFF512E5F);
+		colorTriangle(original.v8, original.v4, original.v6);      //0xFF154360);
+															       
+		colorTriangle(original.v6, original.v5, original.v8);      //0xFF0B5345);
+		colorTriangle(original.v7, original.v8, original.v5);      //0xFF7D6608);
+															       
+		colorTriangle(original.v5, original.v1, original.v7);      //0xFF6E2C00);
+		colorTriangle(original.v3, original.v7, original.v1);      //0xFF7B7D7D);
 
 	}
 	
