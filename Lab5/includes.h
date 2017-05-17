@@ -82,15 +82,22 @@ struct cube
 		vertex members[8];
 		struct
 		{
-			//front top
+			//front
 			vertex v1, v2;
 			//front bottom
 			vertex v3, v4;
 
-			//back top
+			//right
 			vertex v5, v6;
-			//back bottom
 			vertex v7, v8;
+
+			//back
+			vertex v9, v10;
+			vertex v11, v12;
+
+			//left
+			vertex v13, v14;
+			vertex v15, v16;
 		};
 	};
 };
