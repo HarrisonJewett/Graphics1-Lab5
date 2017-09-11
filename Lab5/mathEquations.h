@@ -2,7 +2,7 @@
 #include <math.h>
 #include "includes.h"
 
-float bcZ(float f1, float f2, float f3, float r1, float r2, float r3);
+float bcZ(float f1, float f2, float f3, vec3f ratio);
 
 
 vec3f vec3Matrix3Mult(vec3f v1, matrix3 m1)
@@ -271,92 +271,65 @@ int implicitLineEquation(int x1, int x2, int y1, int y2, int midx, int midy)
 	return (((y1 - y2)*midx) + ((x2 - x1)*midy) + ((x1*y2) - (y1*x2)));
 }
 
-bool barycentricCheck(int x1, int y1, int x2, int y2, int x3, int y3, int pointX, int pointY)
+vec3f barycentric(float x1, float y1, float x2, float y2, float x3, float y3, int checkX, int checkY)
 {
-	int gamma = implicitLineEquation(x1, x2, y1, y2, x3, y3);
-	int alpha = implicitLineEquation(x2, x3, y2, y3, x1, y1);
-	int beta = implicitLineEquation(x3, x1, y3, y1, x2, y2);
-	int temp1 = implicitLineEquation(x1, x2, y1, y2, pointX, pointY);
-	int temp2 = implicitLineEquation(x2, x3, y2, y3, pointX, pointY);
-	int temp3 = implicitLineEquation(x3, x1, y3, y1, pointX, pointY);
+	int a1 = convertNDCX(x1);
+	int a2 = convertNDCX(x2);
+	int a3 = convertNDCX(x3);
+	int b1 = convertNDCY(y1);
+	int b2 = convertNDCY(y2);
+	int b3 = convertNDCY(y3);
 
-	float check1 = (float)temp1 / gamma;
-	float check2 = (float)temp2 / alpha;
-	float check3 = (float)temp3 / beta;
-
-	return (check1 >= 0 && check1 <= 1 && check2 >= 0 && check2 <= 1 && check3 >= 0 && check3 <= 1);
-}
-
-float barycentric(vec4f v1, vec4f v2, vec4f v3, int checkX, int checkY)
-{
-	int x1 = convertNDCX(v1.x);
-	int x2 = convertNDCX(v2.x);
-	int x3 = convertNDCX(v3.x);
-	int y1 = convertNDCY(v1.y);
-	int y2 = convertNDCY(v2.y);
-	int y3 = convertNDCY(v3.y);
-
-	int gamma = implicitLineEquation(x1, x2, y1, y2, x3, y3);
+	/*int gamma = implicitLineEquation(x1, x2, y1, y2, x3, y3);
 	int alpha = implicitLineEquation(x2, x3, y2, y3, x1, y1);
 	int beta = implicitLineEquation(x3, x1, y3, y1, x2, y2);
 	int temp1 = implicitLineEquation(x1, x2, y1, y2, checkX, checkY);
 	int temp2 = implicitLineEquation(x2, x3, y2, y3, checkX, checkY);
-	int temp3 = implicitLineEquation(x3, x1, y3, y1, checkX, checkY);
+	int temp3 = implicitLineEquation(x3, x1, y3, y1, checkX, checkY);*/
+
+	int gamma = implicitLineEquation(a1, a2, b1, b2, a3, b3);
+	int alpha = implicitLineEquation(a2, a3, b2, b3, a1, b1);
+	int beta = implicitLineEquation(a3, a1, b3, b1, a2, b2);
+	int temp1 = implicitLineEquation(a1, a2, b1, b2, checkX, checkY);
+	int temp2 = implicitLineEquation(a2, a3, b2, b3, checkX, checkY);
+	int temp3 = implicitLineEquation(a3, a1, b3, b1, checkX, checkY);
 
 	float ratio1 = (float)temp1 / gamma;
 	float ratio2 = (float)temp2 / alpha;
 	float ratio3 = (float)temp3 / beta;
 
-	return bcZ(v3.z, v1.z, v2.z, ratio1, ratio2, ratio3);
+	vec3f temp;
+	temp.x = ratio2;
+	temp.y = ratio3;
+	temp.z = ratio1;
+
+	if (ratio1 >= 0 && ratio1 <= 1 && ratio2 >= 0 && ratio2 <= 1 && ratio3 >= 0 && ratio3 <= 1)
+		return temp;
+	else
+		return{ 0, 0, 0 };
 }
 
-float bcZ(float f1, float f2, float f3, float r1, float r2, float r3)
+float bcAdd(float f1, float f2, float f3, vec3f ratio)
 {
-	return ((f1 * r1) + (f2 * r2) + (f3 * r3));
+	return ((f1 * ratio.x) + (f2 * ratio.y) + (f3 * ratio.z));
 }
 
-float baryU(vertex vert1, vertex vert2, vertex vert3, float cX, float cY)
+unsigned int colorSwap(unsigned int color)
 {
-	int u1 = convertNDCX(vert1.U, TreeOfLife_width);
-	int u2 = convertNDCX(vert2.U, TreeOfLife_width);
-	int u3 = convertNDCX(vert3.U, TreeOfLife_width);
-	int v1 = convertNDCY(vert1.V, TreeOfLife_width);
-	int v2 = convertNDCY(vert2.V, TreeOfLife_width);
-	int v3 = convertNDCY(vert3.V, TreeOfLife_width);
+	unsigned int temp1 = (color & 0xFF000000) >> 24;
+	unsigned int temp2 = (color & 0x00FF0000) >> 8;
+	unsigned int temp3 = (color & 0x0000FF00) << 8;
+	unsigned int temp4 = (color & 0x000000FF) << 24;
 
-	int gamma = implicitLineEquation(u1, u2, v1, v2, u3, v3);
-	int alpha = implicitLineEquation(u2, u3, v2, v3, u1, v1);
-	int beta = implicitLineEquation(u3, u1, v3, v1, u2, v2);
-	int t1 = implicitLineEquation(u1, u2, v1, v2, cX, cY);
-	int t2 = implicitLineEquation(u2, u3, v2, v3, cX, cY);
-	int t3 = implicitLineEquation(u3, u1, v3, v1, cX, cY);
-
-	float r1 = (float)t1 / gamma;
-	float r2 = (float)t2 / alpha;
-	float r3 = (float)t3 / beta;
-	
-	return bcZ(vert3.U, vert1.U, vert2.U, r1, r2, r3);
+	return (temp1 | temp2 | temp3 | temp4);
 }
 
-float baryV(vertex vert1, vertex vert2, vertex vert3, float cX, float cY)
+unsigned int texelU(float u, unsigned int width)
 {
-	int u1 = convertNDCX(vert1.U, TreeOfLife_width);
-	int u2 = convertNDCX(vert2.U, TreeOfLife_width);
-	int u3 = convertNDCX(vert3.U, TreeOfLife_width);
-	int v1 = convertNDCY(vert1.V, TreeOfLife_width);
-	int v2 = convertNDCY(vert2.V, TreeOfLife_width);
-	int v3 = convertNDCY(vert3.V, TreeOfLife_width);
+	return (u * width);
+}
 
-	int gamma = implicitLineEquation(u1, u2, v1, v2, u3, v3);
-	int alpha = implicitLineEquation(u2, u3, v2, v3, u1, v1);
-	int beta = implicitLineEquation(u3, u1, v3, v1, u2, v2);
-	int t1 = implicitLineEquation(u1, u2, v1, v2, cX, cY);
-	int t2 = implicitLineEquation(u2, u3, v2, v3, cX, cY);
-	int t3 = implicitLineEquation(u3, u1, v3, v1, cX, cY);
-
-	float r1 = (float)t1 / gamma;
-	float r2 = (float)t2 / alpha;
-	float r3 = (float)t3 / beta;
-
-	return bcZ(vert3.V, vert1.V, vert2.V, r1, r2, r3);
+unsigned int texelV(float v, unsigned int height)
+{
+	return (v * height);
 }

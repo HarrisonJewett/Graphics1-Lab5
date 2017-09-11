@@ -12,7 +12,6 @@ void drawToRaster(int x, int y, float z, unsigned int color);
 void clearBuffer(unsigned int color);
 void drawLine(const vertex& v1, const vertex& v2);
 void colorTriangle(vertex v1, vertex v2, vertex v3);
-unsigned int colorSwap(unsigned int color);
 
 
 void parametricAlgorithm(vertex v1, vertex v2)
@@ -34,7 +33,7 @@ void parametricAlgorithm(vertex v1, vertex v2)
 		float currZ = (v2.point.z - v1.point.z)*ratio + v1.point.z;
 		unsigned int c = interpColors(v1.color, v2.color, ratio);
 		if (PixelShader)
-			PixelShader(c);
+			PixelShader(c, 0, 0);
 		drawToRaster(currX, currY, currZ, c);
 	}
 }
@@ -108,7 +107,7 @@ void colorTriangle(vertex v1, vertex v2, vertex v3)
 
 	unsigned int x1 = convertNDCX(temp1.point.x);
 	unsigned int x2 = convertNDCX(temp2.point.x);
-	unsigned int x3 = convertNDCX(temp3.point.x); 
+	unsigned int x3 = convertNDCX(temp3.point.x);
 	unsigned int y1 = convertNDCY(temp1.point.y);
 	unsigned int y2 = convertNDCY(temp2.point.y);
 	unsigned int y3 = convertNDCY(temp3.point.y);
@@ -116,28 +115,23 @@ void colorTriangle(vertex v1, vertex v2, vertex v3)
 	int startX = std::min(std::min(x1, x2), x3);
 	int endX = std::max(std::max(x1, x2), x3);
 	int startY = std::min(std::min(y1, y2), y3);
-	int endY = std::max(std::max(y1, y2), y3);	
+	int endY = std::max(std::max(y1, y2), y3);
+
+	unsigned int color;
 
 	for (int i = startY; i < endY; ++i)
 	{
 		for (int j = startX; j < endX; ++j)
 		{
-			if (barycentricCheck(x1, y1, x2, y2, x3, y3, j, i))
-			{
-				unsigned int color = colorSwap(tree_pixels[convertCoor(convertNDCX(baryU(temp1, temp2, temp3, j, i),511), convertNDCY(baryV(temp1, temp2, temp3, j, i),511), TreeOfLife_width)]);
+			vec3f tempVec = barycentric(temp1.point.x, temp1.point.y, temp2.point.x, temp2.point.y, temp3.point.x, temp3.point.y, j, i);
 
-				drawToRaster(j, i, barycentric(temp1.point, temp2.point, temp3.point, j, i), color);
-			}
+			PixelShader(color, bcAdd(temp1.U, temp2.U, temp3.U, tempVec), bcAdd(temp1.V, temp2.V, temp3.V, tempVec));
+
+			if (tempVec.x == 0 && tempVec.y == 0 && tempVec.z == 0)
+			{}
+			else
+			drawToRaster(j, i, bcAdd(temp1.point.z, temp2.point.z, temp3.point.z, tempVec), color);
+
 		}
 	}
-}
-
-unsigned int colorSwap(unsigned int color)
-{
-	unsigned int temp1 = (color & 0xFF000000) >> 24;
-	unsigned int temp2 = (color & 0x00FF0000) >> 8;
-	unsigned int temp3 = (color & 0x0000FF00) << 8;
-	unsigned int temp4 = (color & 0x000000FF) << 24;
-
-	return (temp1 | temp2 | temp3 | temp4);
 }

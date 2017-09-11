@@ -24,12 +24,12 @@ int main()
 
 	original.v3.point = { -0.25,  0  , -0.25, 1.0f };
 	original.v3.color = 0xFF00FF00;
-	original.v3.U = 1.0;
+	original.v3.U = 0.0;
 	original.v3.V = 1.0;
 
 	original.v4.point = { 0.25,  0  , -0.25, 1.0f };
 	original.v4.color = 0xFF00FF00;
-	original.v4.U = 0.0;
+	original.v4.U = 1.0;
 	original.v4.V = 1.0;
 
 
@@ -173,6 +173,9 @@ int main()
 		drawLine(original.v4, original.v12);
 
 		//filling triangles
+
+		PixelShader = PS_Tree;
+
 		//front face
 		colorTriangle(original.v1, original.v2, original.v3);      //0xFF00FF00);
 		colorTriangle(original.v4, original.v3, original.v2);      //0xFF641E16);
